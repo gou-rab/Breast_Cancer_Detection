@@ -1,3 +1,6 @@
+# 🎗️ Breast Cancer Detection — AI Web App
+
+An AI-powered breast cancer detection web application built with Flask and Random Forest classification, trained on the Wisconsin Breast Cancer Dataset.
 <div align="center">
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=28&pause=1000&color=FF6B9D&center=true&vCenter=true&width=600&lines=🎗️+Breast+Cancer+Detection;AI-Powered+Medical+Diagnosis;Random+Forest+%7C+96.49%25+Accuracy" alt="Typing SVG" />
