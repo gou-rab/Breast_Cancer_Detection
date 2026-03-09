@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import seaborn as sns
 import joblib
 import os
@@ -17,12 +16,15 @@ from sklearn.metrics import (
     roc_curve, auc, accuracy_score
 )
 
-DATA_PATH   = "data.csv"
-MODEL_PATH  = "model.pkl"
-SCALER_PATH = "scaler.pkl"
-VIZ_DIR     = "static/visualizations"
+# ── Absolute paths (works locally & on Render) ────────────────────────────────
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH   = os.path.join(BASE_DIR, "data.csv")
+MODEL_PATH  = os.path.join(BASE_DIR, "model.pkl")
+SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
+VIZ_DIR     = os.path.join(BASE_DIR, "static", "visualizations")
 os.makedirs(VIZ_DIR, exist_ok=True)
 
+# ── Palette ──────────────────────────────────────────────────────────────────
 BENIGN_COLOR    = "#4ECDC4"
 MALIGNANT_COLOR = "#FF6B6B"
 BG_COLOR        = "#0D1117"
@@ -33,21 +35,22 @@ ACCENT          = "#58A6FF"
 
 def set_dark_style():
     plt.rcParams.update({
-        "figure.facecolor":  BG_COLOR,
-        "axes.facecolor":    PANEL_COLOR,
-        "axes.edgecolor":    GRID_COLOR,
-        "axes.labelcolor":   TEXT_COLOR,
-        "axes.titlecolor":   TEXT_COLOR,
-        "xtick.color":       TEXT_COLOR,
-        "ytick.color":       TEXT_COLOR,
-        "grid.color":        GRID_COLOR,
-        "text.color":        TEXT_COLOR,
-        "font.family":       "DejaVu Sans",
-        "axes.titlesize":    13,
-        "axes.labelsize":    11,
-        "figure.dpi":        130,
+        "figure.facecolor": BG_COLOR,
+        "axes.facecolor":   PANEL_COLOR,
+        "axes.edgecolor":   GRID_COLOR,
+        "axes.labelcolor":  TEXT_COLOR,
+        "axes.titlecolor":  TEXT_COLOR,
+        "xtick.color":      TEXT_COLOR,
+        "ytick.color":      TEXT_COLOR,
+        "grid.color":       GRID_COLOR,
+        "text.color":       TEXT_COLOR,
+        "font.family":      "DejaVu Sans",
+        "axes.titlesize":   13,
+        "axes.labelsize":   11,
+        "figure.dpi":       130,
     })
 
+# ── 1. Load & clean ───────────────────────────────────────────────────────────
 print("📂  Loading data …")
 df = pd.read_csv(DATA_PATH)
 df.columns = df.columns.str.strip()
@@ -62,14 +65,15 @@ y = df["diagnosis"]
 print(f"   Samples : {len(df)}  |  Features : {len(FEATURES)}")
 print(f"   Malignant : {y.sum()}  |  Benign : {(y==0).sum()}")
 
+# ── 2. Split & scale ──────────────────────────────────────────────────────────
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
-
 scaler = StandardScaler()
 X_train_s = scaler.fit_transform(X_train)
 X_test_s  = scaler.transform(X_test)
 
+# ── 3. Train & pick best model ────────────────────────────────────────────────
 print("\n🤖  Training models …")
 models = {
     "Random Forest":       RandomForestClassifier(n_estimators=200, random_state=42),
@@ -87,16 +91,20 @@ for name, clf in models.items():
 
 print(f"\n✅  Best model → {best_name}  (accuracy={best_acc:.4f})")
 
+# ── 4. Save artifacts ─────────────────────────────────────────────────────────
 joblib.dump(best_model, MODEL_PATH)
 joblib.dump(scaler,     SCALER_PATH)
-print(f"💾  Saved  {MODEL_PATH}  &  {SCALER_PATH}")
+print(f"💾  Saved {MODEL_PATH}")
+print(f"💾  Saved {SCALER_PATH}")
 
+# ── 5. Visualizations ─────────────────────────────────────────────────────────
 set_dark_style()
-y_pred      = best_model.predict(X_test_s)
-y_prob      = best_model.predict_proba(X_test_s)[:, 1]
+y_pred = best_model.predict(X_test_s)
+y_prob = best_model.predict_proba(X_test_s)[:, 1]
 
-# 5-a  Confusion Matrix
 print("\n📊  Generating visualizations …")
+
+# 5-a Confusion Matrix
 fig, ax = plt.subplots(figsize=(6, 5))
 cm = confusion_matrix(y_test, y_pred)
 sns.heatmap(
@@ -104,17 +112,17 @@ sns.heatmap(
     xticklabels=["Benign", "Malignant"],
     yticklabels=["Benign", "Malignant"],
     linewidths=1, linecolor=GRID_COLOR,
-    annot_kws={"size": 18, "weight": "bold"},
-    ax=ax
+    annot_kws={"size": 18, "weight": "bold"}, ax=ax
 )
 ax.set_xlabel("Predicted Label", labelpad=10)
 ax.set_ylabel("True Label", labelpad=10)
 ax.set_title("Confusion Matrix", pad=14, fontweight="bold")
 fig.tight_layout()
-fig.savefig(f"{VIZ_DIR}/confusion_matrix.png", bbox_inches="tight", facecolor=BG_COLOR)
+fig.savefig(os.path.join(VIZ_DIR, "confusion_matrix.png"), bbox_inches="tight", facecolor=BG_COLOR)
 plt.close()
+print("   ✔  confusion_matrix.png")
 
-# 5-b  ROC Curve
+# 5-b ROC Curve
 fpr, tpr, _ = roc_curve(y_test, y_prob)
 roc_auc = auc(fpr, tpr)
 fig, ax = plt.subplots(figsize=(6, 5))
@@ -127,18 +135,17 @@ ax.set_title("ROC Curve", fontweight="bold", pad=14)
 ax.legend(loc="lower right", framealpha=0.3)
 ax.grid(True, alpha=0.3)
 fig.tight_layout()
-fig.savefig(f"{VIZ_DIR}/roc_curve.png", bbox_inches="tight", facecolor=BG_COLOR)
+fig.savefig(os.path.join(VIZ_DIR, "roc_curve.png"), bbox_inches="tight", facecolor=BG_COLOR)
 plt.close()
+print("   ✔  roc_curve.png")
 
-if hasattr(best_model, "feature_importances_"):
-    importances = best_model.feature_importances_
-else:
-    importances = np.abs(best_model.coef_[0])
-
+# 5-c Feature Importance
+importances = (best_model.feature_importances_
+               if hasattr(best_model, "feature_importances_")
+               else np.abs(best_model.coef_[0]))
 feat_df = (
     pd.DataFrame({"feature": FEATURES, "importance": importances})
-    .sort_values("importance", ascending=True)
-    .tail(15)
+    .sort_values("importance", ascending=True).tail(15)
 )
 fig, ax = plt.subplots(figsize=(8, 6))
 colors = [MALIGNANT_COLOR if v > feat_df["importance"].median() else BENIGN_COLOR
@@ -151,13 +158,14 @@ ax.set_xlabel("Importance Score")
 ax.set_title("Top 15 Feature Importances", fontweight="bold", pad=14)
 ax.grid(True, axis="x", alpha=0.3)
 fig.tight_layout()
-fig.savefig(f"{VIZ_DIR}/feature_importance.png", bbox_inches="tight", facecolor=BG_COLOR)
+fig.savefig(os.path.join(VIZ_DIR, "feature_importance.png"), bbox_inches="tight", facecolor=BG_COLOR)
 plt.close()
+print("   ✔  feature_importance.png")
 
+# 5-d Correlation Heatmap
 top12 = (
     pd.DataFrame({"feature": FEATURES, "importance": importances})
-    .sort_values("importance", ascending=False)
-    .head(12)["feature"].tolist()
+    .sort_values("importance", ascending=False).head(12)["feature"].tolist()
 )
 fig, ax = plt.subplots(figsize=(10, 8))
 corr = df[top12 + ["diagnosis"]].corr()
@@ -171,10 +179,11 @@ sns.heatmap(
 )
 ax.set_title("Correlation Heatmap (Top 12 Features)", fontweight="bold", pad=14)
 fig.tight_layout()
-fig.savefig(f"{VIZ_DIR}/correlation_heatmap.png", bbox_inches="tight", facecolor=BG_COLOR)
+fig.savefig(os.path.join(VIZ_DIR, "correlation_heatmap.png"), bbox_inches="tight", facecolor=BG_COLOR)
 plt.close()
+print("   ✔  correlation_heatmap.png")
 
-# 5-e  Class Distribution
+# 5-e Class Distribution
 fig, ax = plt.subplots(figsize=(5, 4))
 counts = y.value_counts()
 bars = ax.bar(
@@ -190,13 +199,8 @@ ax.set_ylabel("Count")
 ax.set_title("Class Distribution", fontweight="bold", pad=14)
 ax.grid(True, axis="y", alpha=0.3)
 fig.tight_layout()
-fig.savefig(f"{VIZ_DIR}/class_distribution.png", bbox_inches="tight", facecolor=BG_COLOR)
+fig.savefig(os.path.join(VIZ_DIR, "class_distribution.png"), bbox_inches="tight", facecolor=BG_COLOR)
 plt.close()
-
-print("   ✔  confusion_matrix.png")
-print("   ✔  roc_curve.png")
-print("   ✔  feature_importance.png")
-print("   ✔  correlation_heatmap.png")
 print("   ✔  class_distribution.png")
 
 print("\n📋  Classification Report:")
