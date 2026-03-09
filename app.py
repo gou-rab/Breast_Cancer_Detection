@@ -1,12 +1,17 @@
 import os
 import joblib
 import numpy as np
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template
 
-app = Flask(__name__, template_folder=".", static_folder="static")
+# ── Absolute base dir so paths work on any server ────────────────────────────
+BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR  = os.path.join(BASE_DIR, "static")
 
-MODEL_PATH  = "model.pkl"
-SCALER_PATH = "scaler.pkl"
+app = Flask(__name__, template_folder=BASE_DIR, static_folder=STATIC_DIR)
+
+# ── Load artifacts ────────────────────────────────────────────────────────────
+MODEL_PATH  = os.path.join(BASE_DIR, "model.pkl")
+SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
 
 model  = joblib.load(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
@@ -22,6 +27,7 @@ FEATURES = [
     "fractal_dimension_worst",
 ]
 
+# ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -30,7 +36,7 @@ def index():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        data = request.get_json(force=True)
+        data   = request.get_json(force=True)
         values = [float(data.get(f, 0)) for f in FEATURES]
         arr    = np.array(values).reshape(1, -1)
         arr_s  = scaler.transform(arr)
@@ -39,10 +45,10 @@ def predict():
         proba = model.predict_proba(arr_s)[0].tolist()
 
         return jsonify({
-            "prediction":   pred,
-            "label":        "Malignant" if pred == 1 else "Benign",
-            "confidence":   round(max(proba) * 100, 2),
-            "prob_benign":  round(proba[0] * 100, 2),
+            "prediction":     pred,
+            "label":          "Malignant" if pred == 1 else "Benign",
+            "confidence":     round(max(proba) * 100, 2),
+            "prob_benign":    round(proba[0] * 100, 2),
             "prob_malignant": round(proba[1] * 100, 2),
         })
     except Exception as e:
@@ -55,5 +61,5 @@ def health():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
