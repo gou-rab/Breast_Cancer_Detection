@@ -1,19 +1,7 @@
 # 🎗️ Breast Cancer Detection — AI Web App
 
 An AI-powered breast cancer detection web application built with Flask and Random Forest classification, trained on the Wisconsin Breast Cancer Dataset.
-<div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=28&pause=1000&color=FF6B9D&center=true&vCenter=true&width=600&lines=🎗️+Breast+Cancer+Detection;AI-Powered+Medical+Diagnosis;Random+Forest+%7C+96.49%25+Accuracy" alt="Typing SVG" />
-
-<br/>
-
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-3.0.3-000000?style=for-the-badge&logo=flask&logoColor=white)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.5.2-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-2.2.3-150458?style=for-the-badge&logo=pandas&logoColor=white)
-![Render](https://img.shields.io/badge/Deployed_on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
-
-<br/>
 
 > **AI-powered breast cancer classification web app** trained on the Wisconsin Breast Cancer Dataset.  
 > Predicts **Malignant** or **Benign** tumors with **96.49% accuracy** using Random Forest.
