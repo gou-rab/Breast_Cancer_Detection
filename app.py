@@ -3,18 +3,13 @@ import joblib
 import numpy as np
 from flask import Flask, request, jsonify, render_template
 
-# ── Absolute base dir so paths work on any server ────────────────────────────
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR  = os.path.join(BASE_DIR, "static")
 
 app = Flask(__name__, template_folder=BASE_DIR, static_folder=STATIC_DIR)
 
-# ── Load artifacts ────────────────────────────────────────────────────────────
 MODEL_PATH  = os.path.join(BASE_DIR, "model.pkl")
 SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
-
-model  = joblib.load(MODEL_PATH)
-scaler = joblib.load(SCALER_PATH)
 
 FEATURES = [
     "radius_mean","texture_mean","perimeter_mean","area_mean","smoothness_mean",
@@ -27,6 +22,16 @@ FEATURES = [
     "fractal_dimension_worst",
 ]
 
+# ── Load model lazily (after train.py has run during build) ──────────────────
+model  = None
+scaler = None
+
+def load_artifacts():
+    global model, scaler
+    if model is None:
+        model  = joblib.load(MODEL_PATH)
+        scaler = joblib.load(SCALER_PATH)
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
@@ -36,6 +41,7 @@ def index():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
+        load_artifacts()
         data   = request.get_json(force=True)
         values = [float(data.get(f, 0)) for f in FEATURES]
         arr    = np.array(values).reshape(1, -1)
