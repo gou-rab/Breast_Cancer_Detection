@@ -6,7 +6,7 @@ An AI-powered breast cancer detection web application built with Flask and Rando
 > **AI-powered breast cancer classification web app** trained on the Wisconsin Breast Cancer Dataset.  
 > Predicts **Malignant** or **Benign** tumors with **96.49% accuracy** using Random Forest.
 
-<br/>
+
 
 ![Accuracy](https://img.shields.io/badge/Accuracy-96.49%25-brightgreen?style=flat-square)
 ![AUC](https://img.shields.io/badge/AUC-~0.99-blue?style=flat-square)
@@ -20,9 +20,6 @@ An AI-powered breast cancer detection web application built with Flask and Rando
 
 ## 📸 App Preview
 
-| 🖥️ Desktop View | 📱 Mobile View |
-|:-:|:-:|
-| Full form with all 30 features, live prediction panel & visualizations | Responsive 2-column grid, touch-friendly inputs, scrollable result card |
 
 ---
 
